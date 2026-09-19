@@ -1,0 +1,92 @@
+# ===== macOS / Windows 系统残留 =====
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+*.swp
+*.swo
+
+# ===== 通用 Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv/
+backend/venv/
+backend/env/
+
+# ===== 后端测试 / 缓存 =====
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+.tox/
+.nox/
+
+# ===== 后端运行数据 =====
+# ⚠️ 重要：data/ 下的运行数据全部 gitignore，但保留 test_samples（测试样本）
+backend/data/papers/*
+!backend/data/papers/test_samples/
+backend/data/papers/test_samples/*
+!backend/data/papers/test_samples/transformer_sample.pdf
+!backend/data/papers/test_samples/transformer_sample.docx
+backend/data/uploads/*
+backend/data/ppts/*
+# 网页端「设置」持久化文件（含 API Key，严禁入库）
+backend/data/settings.json
+backend/logs/*.log
+backend/logs/fetched_*
+backend/logs/*.docx
+backend/logs/*.pdf
+!backend/logs/.gitkeep
+frontend/logs/
+
+# ===== 本地 AI 工具目录 / 过程产物（不入库）=====
+.workbuddy/
+.zcode/
+design-preview/
+gui-test-*/
+frontend-backup-*/
+.ruff_cache/
+.mypy_cache/
+
+# ===== 环境变量 / 密钥 =====
+.env
+.env.*
+!.env.example
+!.env.local.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+# ===== 前端 =====
+node_modules/
+.next/
+out/
+build/
+*.tsbuildinfo
+next-env.d.ts
+.shots/
+frontend/shots/
+frontend/dev-err.log
+frontend/dev.log
+frontend/dev.log.*
+frontend/tests/screenshots/
+
+# ===== start_dev.sh 产物（根目录日志）=====
+backend.log
+frontend.log
+
+# ===== IDE / 编辑器 =====
+.idea/
+.vscode/
+*.iml
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

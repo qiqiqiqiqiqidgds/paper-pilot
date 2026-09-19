@@ -1,0 +1,12 @@
+# ruff 配置：仅启用经典默认规则（E4/E7/E9/F）
+# E4/E7/E9 = 语法与常见格式错误，F = pyflakes（未定义名/未使用 import/死变量等真实问题）
+# 说明：ruff 新版默认规则集过宽（UP/I/S/BLE 等风格类规则），本仓库不追求全风格合规；
+#       这里选择能拦截真实 bug 的子集，保持 CI 可绿、低噪音。
+[lint]
+select = ["E4", "E7", "E9", "F"]
+
+[lint.per-file-ignores]
+# 测试文件与 app/main.py 在 import 前注入环境变量 / sys.path 是刻意设计，
+# 会导致 "module level import not at top"（E402），此处豁免。
+"tests/**" = ["E402"]
+"app/main.py" = ["E402"]

@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# 虚拟环境
+venv/
+env/
+ENV/
+.venv/
+
+# 环境变量
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 系统
+.DS_Store
+Thumbs.db
+
+# 日志（运行时生成的 .log 文件不入 git；logs/ 保留 .gitkeep 维持目录结构）
+*.log
+logs/*
+!logs/.gitkeep
+uvicorn-stderr*.log
+uvicorn-stdout*.log
+
+# 测试产物（curl 输出 / 临时抓包）
+health*.json
+papers*.json
+
+# 临时文件
+*.tmp
+*.bak

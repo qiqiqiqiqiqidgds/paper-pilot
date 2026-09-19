@@ -1,0 +1,416 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   PaperPilot ·「批注手稿」设计 token（对齐 design-preview/app.html）
+   米白纸面 + 墨色文字 + 朱砂批注；深色为同一套 token 的暖棕映射
+   全部取值由设计稿 hex 精确换算为 HSL 三元组
+   ============================================================ */
+@layer base {
+  :root {
+    --background: 38 52% 96%;          /* #FAF6EF 纸面 */
+    --foreground: 33 17% 10%;          /* #1F1B16 墨 */
+    --card: 45 100% 98%;               /* #FFFDF7 纸页卡片 */
+    --card-foreground: 33 17% 10%;
+    --primary: 33 17% 10%;             /* 墨底纸字 */
+    --primary-foreground: 38 52% 96%;
+    --primary-hover: 32 15% 20%;       /* #3A332B 墨底按钮悬停 */
+    --secondary: 41 41% 89%;           /* #EFE8D9 */
+    --secondary-foreground: 33 17% 10%;
+    --muted: 41 41% 89%;
+    --muted-foreground: 34 9% 50%;     /* #8A8073 淡墨 */
+    --accent: 22 57% 92%;              /* #F6E7DE 暖底悬浮 */
+    --accent-foreground: 33 17% 10%;
+    --destructive: 6 57% 42%;          /* #A83A2E */
+    --destructive-foreground: 38 52% 96%;
+    --border: 39 33% 86%;              /* #E8E0D1 细线 */
+    --border-strong: 38 31% 77%;       /* #D6C9B2 重线 */
+    --input: 39 33% 86%;
+    --ring: 11 61% 44%;                /* 朱砂 */
+    --radius: 0.375rem;
+    /* 品牌扩展色 */
+    --ink2: 38 15% 31%;                /* #5C5344 次级墨色 */
+    --cinnabar: 11 61% 44%;            /* #B4452C 朱砂 */
+    --cinnabar-soft: 22 57% 92%;       /* #F6E7DE */
+    --quote-bg: 41 58% 92%;            /* #F6EEDD 朱批底 */
+    --honey: 47 87% 69%;               /* #F5D66B 划词蜜黄 */
+    --desk: 41 41% 89%;                /* #EFE8D9 书桌 */
+    --page: 43 100% 99%;               /* #FFFDF8 纸页 */
+    --green: 143 33% 36%;              /* #3E7A55 */
+    /* 书签带五色（与书卡色条同族） */
+    --rb1: 11 61% 44%;                 /* #B4452C */
+    --rb2: 196 20% 36%;                /* #4A6670 */
+    --rb3: 40 59% 45%;                 /* #B98A2F */
+    --rb4: 343 40% 39%;                /* #8A3B52 */
+    --rb5: 94 16% 43%;                 /* #6B7F5C */
+    /* 字体栈：标题衬线（Noto Serif SC 自托管 + 系统宋体兜底） */
+    --font-display: "Noto Serif SC", "Source Han Serif SC", "Source Han Serif CN", "Songti SC", "STSong", "SimSun", serif;
+  }
+  .dark {
+    --background: 30 17% 9%;           /* #1B1713 */
+    --foreground: 38 35% 89%;          /* #EDE6DA */
+    --card: 33 18% 12%;                /* #241F19 */
+    --card-foreground: 38 35% 89%;
+    --primary: 38 35% 89%;
+    --primary-foreground: 30 17% 9%;
+    --primary-hover: 39 30% 81%;       /* #DDD3C0 */
+    --secondary: 33 14% 15%;
+    --secondary-foreground: 38 35% 89%;
+    --muted: 33 14% 15%;
+    --muted-foreground: 38 11% 60%;    /* #A39B8D */
+    --accent: 17 33% 17%;              /* #3A251D */
+    --accent-foreground: 38 35% 89%;
+    --destructive: 10 59% 64%;         /* #D97F6C */
+    --destructive-foreground: 30 17% 9%;
+    --border: 32 18% 19%;              /* #383027 */
+    --border-strong: 37 18% 25%;       /* #4C4335 */
+    --input: 32 18% 19%;
+    --ring: 13 58% 56%;
+    --ink2: 38 22% 76%;                /* #CFC5B4 */
+    --cinnabar: 13 58% 56%;            /* #D06B4F */
+    --cinnabar-soft: 17 33% 17%;       /* #3A251D */
+    --quote-bg: 32 22% 14%;            /* #2A231B */
+    --honey: 47 87% 69%;
+    --desk: 42 36% 5%;                 /* #131009 */
+    --page: 39 42% 89%;                /* #EFE7D8 */
+    --green: 140 28% 65%;              /* #8CBE9D */
+    --rb1: 12 50% 50%;                 /* #C05B41 */
+    --rb2: 196 18% 44%;                /* #5C7A85 */
+    --rb3: 41 44% 48%;                 /* #B08F45 */
+    --rb4: 342 33% 46%;                /* #9C4F66 */
+    --rb5: 92 16% 48%;                 /* #7A8F68 */
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  body { @apply bg-background text-foreground; }
+  html, body { height: 100%; }
+  /* 纸纹颗粒（叠加全页，极低透明度） */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 999;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");
+  }
+  .dark body::after { opacity: 0.055; }
+  ::selection { background: hsl(var(--honey) / 0.55); }
+}
+
+@layer components {
+  /* 衬线标题 */
+  .font-display { font-family: var(--font-display); }
+
+  /* 书签带容器：贴着左侧书架右缘，向右探出（绝对定位于书桌 main，不随内容滚动） */
+  .ribbon-strip {
+    position: absolute;
+    left: 0;
+    top: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    z-index: 20;
+  }
+
+  /* 书签带（边批 Tab）：原竖排丝带顺时针转 90°——横卧的丝带旗，燕尾指向右端，
+     长短参差（原高度变宽度），选中的那条伸得最长 */
+  .ribbon {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 25px;
+    padding: 0 10px;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: #fffdf8;
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+    clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 50%, calc(100% - 9px) 100%, 0 100%);
+    opacity: 0.62;
+    transition: all 0.18s ease-out;
+  }
+  .ribbon:hover { opacity: 0.85; }
+  .ribbon[data-active="true"] { opacity: 1; font-weight: 600; letter-spacing: 3px; }
+  .ribbon.r1 { width: 72px; background: hsl(var(--rb1)); }
+  .ribbon.r2 { width: 66px; background: hsl(var(--rb2)); }
+  .ribbon.r3 { width: 70px; background: hsl(var(--rb3)); }
+  .ribbon.r4 { width: 64px; background: hsl(var(--rb4)); }
+  .ribbon.r5 { width: 68px; background: hsl(var(--rb5)); }
+  .ribbon[data-active="true"].r1 { width: 112px; }
+  .ribbon[data-active="true"].r2 { width: 104px; }
+  .ribbon[data-active="true"].r3 { width: 108px; }
+  .ribbon[data-active="true"].r4 { width: 102px; }
+  .ribbon[data-active="true"].r5 { width: 106px; }
+  .ribbon .badge-dot {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 10px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #fffdf8;
+    opacity: 0;
+  }
+  .ribbon.has-result .badge-dot { opacity: 0.9; }
+
+  /* 边批小节标题：朱砂细线图标 + 衬线标题 + 延伸细线 */
+  .mg-head { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
+  .mg-head::after { content: ""; flex: 1; height: 1px; background: hsl(var(--border)); margin-left: 6px; }
+
+  /* 「随读随批」栏头小签：文字 + 延伸细线 */
+  .mg-label { display: flex; align-items: center; gap: 8px; font-size: 11px; letter-spacing: 3px; color: hsl(var(--muted-foreground)); margin-bottom: 14px; }
+  .mg-label::after { content: ""; flex: 1; height: 1px; background: hsl(var(--border-strong)); }
+
+  /* 边批条目：左侧连接点 + 细线指向纸页（批注手稿的关键构图） */
+  .mg-note { position: relative; padding-left: 26px; }
+  .mg-note::before { content: ""; position: absolute; left: -22px; top: 13px; width: 16px; height: 1px; background: hsl(var(--border-strong)); }
+  .mg-note::after { content: ""; position: absolute; left: -28px; top: 10px; width: 7px; height: 7px; border: 1.5px solid hsl(var(--cinnabar)); border-radius: 50%; background: hsl(var(--card)); }
+
+  /* ==========================================================
+     边批 note 体系（对齐 app.html .note 家族）
+     ========================================================== */
+  .note { position: relative; padding: 2px 0 18px 26px; }
+  /* 连接圈 + 细线收在面板内侧，使 note 盒与「随读随批」栏头左对齐 */
+  .note::before { content: ""; position: absolute; left: 13px; top: 13px; width: 10px; height: 1px; background: hsl(var(--border-strong)); }
+  .note::after { content: ""; position: absolute; left: 0; top: 10px; width: 7px; height: 7px; border: 1.5px solid hsl(var(--cinnabar)); border-radius: 50%; background: hsl(var(--card)); }
+  .note.plain::before, .note.plain::after { display: none; }
+  .note.zhu {
+    border-left: 2px solid hsl(var(--cinnabar));
+    background: hsl(var(--quote-bg));
+    border-radius: 0 4px 4px 0;
+    padding: 10px 12px 10px 14px;
+    margin-left: 10px;
+  }
+  .note.preface { border: 1px dashed hsl(var(--border-strong)); border-radius: 6px; padding: 12px 14px; }
+  .note.preface .note-title { color: hsl(var(--cinnabar)); }
+  .note.err {
+    border-left: 2px solid hsl(var(--destructive));
+    background: hsl(var(--destructive) / 0.06);
+    border-radius: 0 4px 4px 0;
+    padding: 10px 12px;
+    margin-left: 10px;
+  }
+  .note.err .note-title { color: hsl(var(--destructive)); }
+
+  .note-head { display: flex; align-items: baseline; gap: 7px; margin-bottom: 5px; }
+  .note-no { font-family: var(--font-display); font-size: 13px; color: hsl(var(--cinnabar)); }
+  .note-title { font-family: var(--font-display); font-weight: 600; font-size: 13.5px; color: hsl(var(--foreground)); }
+  .note-page { margin-left: auto; font-family: ui-monospace, "Cascadia Mono", Consolas, "Courier New", monospace; font-size: 10.5px; color: hsl(var(--muted-foreground)); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .note-body { font-size: 12.5px; line-height: 1.8; color: hsl(var(--ink2)); text-align: justify; }
+  .note-body.muted { color: hsl(var(--muted-foreground)); font-size: 12px; }
+  .note-jump { display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; font-size: 11.5px; color: hsl(var(--cinnabar)); cursor: pointer; background: none; border: none; padding: 0; }
+  .note-jump:hover { text-decoration: underline; }
+
+  /* 朱批引用块（旧类名，兼容保留；新代码用 .note.zhu） */
+  .quote-zhu {
+    border-left: 2px solid hsl(var(--cinnabar));
+    background: hsl(var(--quote-bg));
+    border-radius: 0 4px 4px 0;
+    transition: background-color 0.15s ease-out;
+  }
+
+  /* 小圆点列表（要点 / 优劣势） */
+  .mini-points { list-style: none; font-size: 12.5px; line-height: 1.8; color: hsl(var(--ink2)); }
+  .mini-points li { position: relative; padding-left: 13px; margin-bottom: 5px; }
+  .mini-points li::before { content: ""; position: absolute; left: 0; top: 10px; width: 4px; height: 4px; background: hsl(var(--cinnabar)); border-radius: 1px; }
+  .mini-points li.good::before { background: hsl(var(--green)); }
+  .mini-points li.bad::before { background: hsl(var(--destructive)); border-radius: 50%; }
+
+  /* 创新等级印章 */
+  .seal {
+    display: inline-block;
+    position: relative;
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: #fffdf8;
+    background: hsl(var(--cinnabar));
+    padding: 9px 11px;
+    border-radius: 4px;
+    transform: rotate(-5deg);
+  }
+  .seal::after {
+    content: "";
+    position: absolute;
+    inset: 3px;
+    border: 1px solid rgb(255 253 248 / 0.55);
+    border-radius: 2px;
+  }
+
+  /* 迷你对比表 */
+  .mini-table { width: 100%; border-collapse: collapse; font-size: 10.5px; }
+  .mini-table th, .mini-table td { border: 1px solid hsl(var(--border-strong)); padding: 4px 6px; text-align: left; line-height: 1.5; color: hsl(var(--ink2)); word-break: break-all; }
+  .mini-table th { background: hsl(var(--card)); font-family: var(--font-display); color: hsl(var(--foreground)); font-weight: 600; white-space: nowrap; }
+
+  /* 严重度章 */
+  .stamp {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: hsl(var(--cinnabar));
+    border: 1px solid hsl(var(--cinnabar));
+    border-radius: 3px;
+    padding: 1px 7px;
+    transform: rotate(-3deg);
+    letter-spacing: 2px;
+  }
+  .stamp.mild { color: hsl(var(--muted-foreground)); border-color: hsl(var(--border-strong)); }
+
+  /* 改进建议虚线框 */
+  .suggest { margin-top: 8px; padding: 8px 10px; background: hsl(var(--card)); border: 1px dashed hsl(var(--border-strong)); border-radius: 4px; font-size: 11.5px; line-height: 1.7; color: hsl(var(--ink2)); }
+  .suggest b { color: hsl(var(--foreground)); }
+
+  /* PPT 勾选项 */
+  .check-row { display: flex; align-items: flex-start; gap: 7px; font-size: 12px; color: hsl(var(--ink2)); line-height: 1.65; margin-bottom: 6px; cursor: pointer; }
+  .check-row input { accent-color: hsl(var(--cinnabar)); margin-top: 2px; }
+  .check-row.disabled { opacity: 0.45; cursor: not-allowed; }
+
+  /* 分析进度条（3px 朱砂细线，支持不定态动画） */
+  .progress-bar { height: 3px; background: hsl(var(--desk)); border-radius: 2px; overflow: hidden; margin: 8px 0 4px; }
+  .dark .progress-bar { background: hsl(var(--border)); }
+  .progress-bar i { display: block; height: 100%; background: hsl(var(--cinnabar)); border-radius: 2px; transition: width 0.4s ease; }
+  .progress-bar.indeterminate i { width: 33% !important; animation: indet 1.4s ease-in-out infinite; }
+  @keyframes indet { 0% { transform: translateX(-100%); } 100% { transform: translateX(400%); } }
+
+  /* 空态（「XX 还没做」提示卡） */
+  .empty-set { text-align: left; }
+  .empty-set .hint { font-size: 12px; color: hsl(var(--muted-foreground)); line-height: 1.8; margin: 6px 0 12px; }
+
+  /* 纸页与 PDF 容器 */
+  .paper-page { background: hsl(var(--page)); border: 1px solid hsl(var(--border)); }
+  .pdf-holder { display: flex; justify-content: center; padding: 22px; overflow-x: auto; }
+  .docx-note { padding: 80px 40px; text-align: center; color: hsl(var(--muted-foreground)); font-size: 12.5px; line-height: 2; }
+  .docx-note b { display: block; font-family: var(--font-display); font-size: 16px; color: hsl(var(--foreground)); margin-bottom: 8px; font-weight: 600; }
+
+  /* 跳转时纸页闪蜜黄描边 */
+  @keyframes pageflash { 0% { box-shadow: 0 0 0 3px hsl(var(--honey)); } 100% { box-shadow: 0 0 0 0 rgb(245 214 107 / 0); } }
+  .sheet-flash { animation: pageflash 1s ease-out; }
+
+  /* 纸页页脚：翻页圆钮 + 衬线页码 */
+  .sheet-foot { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 14px; }  .sheet-foot .pn { font-family: var(--font-display); font-size: 13px; color: hsl(var(--muted-foreground)); letter-spacing: 2px; font-variant-numeric: tabular-nums; }
+  .pn-btn {
+    border: 1px solid hsl(var(--border)); background: hsl(var(--card)); color: hsl(var(--muted-foreground));
+    width: 24px; height: 24px; border-radius: 9999px;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    transition: all 0.15s ease-out;
+  }
+  .pn-btn:hover:not(:disabled) { color: hsl(var(--foreground)); border-color: hsl(var(--border-strong)); }
+  .pn-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* 书桌滚动容器：隐藏滚动条（滚轮/触摸/键盘仍可滚动），保持纸面干净 */
+  .desk-scroll { scrollbar-width: none; -ms-overflow-style: none; }
+  .desk-scroll::-webkit-scrollbar { display: none; }
+
+  /* 缩放浮签（书桌右下角） */
+  .zoom-pill {
+    position: absolute; right: 22px; bottom: 20px;
+    display: flex; align-items: center; gap: 8px;
+    background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 9999px;
+    padding: 4px 10px; font-size: 11.5px; color: hsl(var(--muted-foreground));
+    font-variant-numeric: tabular-nums; z-index: 10;
+  }
+  .zoom-pill button { border: none; background: none; cursor: pointer; color: hsl(var(--muted-foreground)); display: flex; padding: 2px; }
+  .zoom-pill button:hover:not(:disabled) { color: hsl(var(--foreground)); }
+  .zoom-pill button:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  /* 书卡（论文架）：与 app.html .book 同规格 */
+  .book-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 12px 0 0;
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: 4px;
+    cursor: pointer;
+    flex-shrink: 0;
+    width: 100%;
+    transition: all 0.15s ease-out;
+  }
+  .book-card:hover { border-color: hsl(var(--border-strong)); }
+  .book-card-tick { width: 3px; height: 100%; border-radius: 2px 0 0 2px; flex-shrink: 0; }
+  /* 书卡右缘垂直居中的圆形取下钮（hover 出现）。
+     注意：不能像旧版那样用负 top 悬出卡片上缘——书架列表是 overflow-y:scroll
+     的滚动容器，卡片顶部越出容器即被裁掉（第一张卡的钮只剩半个 ✕）；
+     水平方向的 -7px 悬出落在列表右沟（12px）内，不会被裁。 */
+  .book-del {
+    position: absolute;
+    top: 50%;
+    right: -7px;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1px solid hsl(var(--border-strong));
+    background: hsl(var(--card));
+    color: hsl(var(--muted-foreground));
+    font-size: 9px;
+    line-height: 14px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    z-index: 1;
+  }
+  .book-del:hover { color: hsl(var(--destructive)); border-color: hsl(var(--destructive)); }
+}
+
+/* react-pdf 样式覆盖 */
+.react-pdf__Page {
+  margin: 0 auto;
+}
+.react-pdf__Page__canvas {
+  display: block;
+  user-select: text;
+}
+
+/* AI 引用点击 → PDF 文本联动高亮（pdf-viewer.tsx 直接操作 text layer DOM）
+   蜜黄 + multiply 叠加；transition 用于 3 秒后渐隐 */
+.paperpilot-highlight {
+  @apply rounded-sm;
+  background-color: hsl(var(--honey) / 0.75);
+  box-shadow: 0 0 0 1px hsl(var(--honey) / 0.9);
+  mix-blend-mode: multiply;
+  transition: background-color 0.6s ease, box-shadow 0.6s ease;
+}
+
+.paperpilot-highlight.paperpilot-highlight-fade {
+  background-color: transparent;
+  box-shadow: none;
+}
+
+/* Markdown 样式 */
+.markdown {
+  @apply text-sm leading-relaxed;
+}
+.markdown h1 { @apply text-2xl font-bold mt-6 mb-3; }
+.markdown h2 { @apply text-xl font-bold mt-5 mb-2; }
+.markdown h3 { @apply text-lg font-semibold mt-4 mb-2; }
+.markdown p { @apply my-2; }
+.markdown ul { @apply list-disc pl-5 my-2; }
+.markdown ol { @apply list-decimal pl-5 my-2; }
+.markdown li { @apply my-1; }
+.markdown code { @apply bg-muted px-1 py-0.5 rounded text-xs; }
+.markdown pre { @apply bg-muted p-3 rounded text-xs overflow-x-auto my-2; }
+.markdown blockquote { @apply border-l-4 border-muted pl-3 italic my-2; }
+.markdown table { @apply w-full my-3 border-collapse; }
+.markdown th, .markdown td { @apply border border-border px-2 py-1; }
+.markdown th { @apply bg-muted; }
+.markdown a { @apply text-primary underline; }
+
+/* 滚动条 */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: hsl(var(--border-strong)); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.5); }

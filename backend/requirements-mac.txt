@@ -1,0 +1,44 @@
+# PaperPilot Backend - macOS 适配版本
+# 原 requirements.txt 锁的是 2024-06 的版本，Python 3.14 上没 wheel。
+# 这里只把真正撞 Python 3.14 wheel 的几个放宽（>=），其他保持原 pin，
+# Windows 那边继续用原 requirements.txt 即可。
+
+# Web 框架
+fastapi==0.111.0
+uvicorn[standard]==0.30.1
+# 0.0.9 存在 CVE-2024-24762（ReDoS）/ CVE-2024-53981（boundary DoS）；>=0.0.32 已修复
+python-multipart>=0.0.32,<1.0
+
+# 数据校验
+# pydantic==2.7.1 在 Python 3.14 上没 wheel（pydantic-core 2.18.2 无 cp314），
+# 放宽到 >=2.12.0（首个支持 3.14 的版本），加 <3.0 上界防 2.x 破坏性变更
+pydantic>=2.12.0,<3.0
+pydantic-settings==2.2.1
+
+# PDF 解析（macOS + Python 3.14：1.24.7 没 wheel，>=1.24.11 才有）
+# 加 <2.0 上界防止 2.x 破坏 API（1.x → 2.x PyMuPDF 有破坏性变更）
+pymupdf>=1.24.11,<2.0
+
+# DOCX 解析
+python-docx==1.1.2
+
+# LLM（DeepSeek 兼容 OpenAI SDK；1.35.7 在 3.14 上不稳，用 >=1.99 选最新版）
+# 加 <2.0 上界防止 2.x 重写 SDK 接口（openai 1.x → 2.x 有破坏性变更）
+openai>=1.99.0,<2.0
+# P3-2: 移除 tiktoken（全项目无任何 import，属死依赖；与 requirements.txt 同步）
+
+# HTTP 客户端
+httpx==0.27.0
+
+# PPT 生成
+# 加 <2.0 上界防止 2.x 破坏 API
+python-pptx>=1.0.2,<2.0
+
+# 配置 & 工具
+python-dotenv==1.0.1
+
+# 结构化日志（Sprint 2 / I1+I2）：JSON 输出 + request_id 关联
+python-json-logger==2.0.7
+
+# 异步
+anyio==4.4.0
