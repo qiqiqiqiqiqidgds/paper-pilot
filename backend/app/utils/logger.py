@@ -71,8 +71,11 @@ def setup_logger(name: str = "paperpilot", level: Optional[str] = None) -> loggi
 
     # 文件 handler（用绝对路径，避免 cwd 不一致）
     # B18: RotatingFileHandler 防止 app.log 无限增长（单文件 10MB，保留 5 个备份）
-    log_dir = Path(__file__).resolve().parent.parent.parent / "logs"
-    log_dir.mkdir(exist_ok=True)
+    # LOG_DIR 环境变量可覆盖（桌面版指向用户数据目录；默认 backend/logs）
+    import os
+    _log_dir_env = os.getenv("LOG_DIR", "")
+    log_dir = Path(_log_dir_env) if _log_dir_env else Path(__file__).resolve().parent.parent.parent / "logs"
+    log_dir.mkdir(parents=True, exist_ok=True)
     file_handler = RotatingFileHandler(
         log_dir / "app.log",
         maxBytes=10 * 1024 * 1024,

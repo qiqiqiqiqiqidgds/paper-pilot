@@ -22,6 +22,7 @@ PaperPilot 是一款基于**手写 Map-Reduce pipeline + 大模型**的论文伴
 - 🪟 **对开视图**：左边 PDF 原文，右边 AI 分析，点击引用自动跳转并高亮
 - 🧠 **Map-Reduce 拆解**：长论文自动按章节切分并发分析，再 Reduce 汇总成五段拆解，比一次性塞给 LLM 准得多
 - ⚙️ **提供商可配**：网页右上角「设置」里填写 base_url / API Key / 模型名，即填即用，支持连接测试
+- 🖥️ **桌面版**：Electron 一键打包成 Windows 安装包（内嵌后端，双击即用，无需装 Python / Node）
 - 🔒 **本地化**：论文存你电脑上，API Key 只存本地，隐私安全
 - 📱 **移动端**：< lg 自动切换为抽屉式布局
 
@@ -72,6 +73,32 @@ npm run dev
 
 详细文档：[`USER_GUIDE.md`](./USER_GUIDE.md)
 
+### 🖥️ 桌面版（Electron，可选）
+
+不想装 Python / Node？可以把前后端打包成一个 Windows 安装包（约 120 MB，双击即用）：
+
+```powershell
+# 后端 PyInstaller onedir（约 20 秒）
+cd backend
+py -3.12 -m venv venv
+.\venv\Scripts\pip install -r requirements.txt pyinstaller
+.\venv\Scripts\pyinstaller paperpilot-backend.spec --noconfirm --clean
+
+# 前端静态导出 + 组装 + 冒烟
+cd ..\frontend
+npm install
+npm run build:desktop
+cd ..\desktop
+npm install
+npm run assemble
+npm run smoke      # 冒烟：健康检查 + 首页可达 → exit 0
+
+# 产出安装包（NSIS）
+npm run dist       # → desktop/release/PaperPilot Setup 1.0.0.exe
+```
+
+架构与完整说明见 [`desktop/README.md`](./desktop/README.md)：FastAPI 同源托管静态前端，数据落在 `%APPDATA%\paperpilot-desktop\`，LLM Key 仍在应用内「设置」里填。
+
 ---
 
 ## ⚙️ 配置 LLM 提供商（两种方式）
@@ -121,8 +148,14 @@ paper-pilot/
 │   ├── package.json
 │   └── README.md
 │
+├── desktop/                    # 桌面版（Electron 壳，见 desktop/README.md）
+│   ├── src/main.js             # 主进程：spawn 后端 / 健康检查 / 进程管理
+│   ├── scripts/assemble.mjs    # 组装后端 onedir + 前端静态产物
+│   └── package.json            # electron-builder 配置（NSIS）
+│
 ├── USER_GUIDE.md               # 用户使用文档
 ├── CONTRIBUTING.md             # 贡献指南
+├── CODE_OF_CONDUCT.md          # 行为准则
 ├── SECURITY.md                 # 安全策略
 ├── CHANGELOG.md                # 更新日志
 ├── start_dev.sh / start_dev.ps1# 一键启动脚本
@@ -145,6 +178,7 @@ paper-pilot/
 | PDF 解析 | PyMuPDF |
 | PPT 生成 | python-pptx |
 | 数据存储 | 本地文件系统（论文库） |
+| 桌面打包 | Electron + electron-builder + PyInstaller（Windows） |
 
 ---
 
@@ -160,6 +194,7 @@ paper-pilot/
 | W6 | 一键 PPT 生成（python-pptx） | ✅ |
 | W7 | 联动高亮 + 用户文档 | ✅ |
 | W8 | 商业化探索 + 收尾 | ✅ |
+| 开源化 | 代码审查修复 + 文档体系 + CI + 桌面版（Electron 打包） | ✅ |
 
 ---
 
@@ -201,7 +236,7 @@ CI 在 `.github/workflows/ci.yml`（pytest + ruff + tsc + eslint + vitest + buil
 
 ## 🤝 参与贡献
 
-欢迎提 Issue / PR，流程见 [`CONTRIBUTING.md`](./CONTRIBUTING.md)。
+欢迎提 Issue / PR，流程见 [`CONTRIBUTING.md`](./CONTRIBUTING.md)，社区行为规范见 [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md)。
 
 主要可改进方向：
 - 支持更多 LLM 内置预设与模型能力探测

@@ -81,6 +81,13 @@ frontend/tests/screenshots/
 backend.log
 frontend.log
 
+# ===== 桌面版（Electron）构建产物 =====
+backend/build/
+backend/dist/
+desktop/resources/
+desktop/release/
+desktop/node_modules/
+
 # ===== IDE / 编辑器 =====
 .idea/
 .vscode/

@@ -61,6 +61,8 @@ powershell -ExecutionPolicy Bypass -File .\start_dev.ps1
 ```
 （脚本会开两个新 PowerShell 窗口分别跑后端 / 前端，关闭主窗口不影响。）
 
+**桌面版（免环境）**：如果你拿到了 `PaperPilot Setup x.x.x.exe` 安装包（或按 [`README.md`](./README.md)「桌面版」一节自行打包），双击安装后从桌面图标启动即可——无需安装 Python / Node，后端已内嵌。启动后在「设置」里填 API Key 的流程与本节一致。
+
 ---
 
 ## 三、详细使用流程
@@ -166,6 +168,17 @@ W6 阶段是基础版，幻灯片数量根据内容自动调整。如需定制�
 ### Q6: 怎么清空论文库？
 
 进入 `backend/data/papers/` 目录，删除对应论文 ID 的文件夹。
+
+### Q7: 桌面版（exe）的数据存在哪？
+
+桌面版的论文库、上传文件、设置（含 API Key）和日志都在用户数据目录，卸载重装不丢失：
+
+- Windows：`%APPDATA%\paperpilot-desktop\`（`data\` 为论文库与设置，`logs\` 为日志）
+- 开发模式（Web 版）则在仓库的 `backend/data/` 下
+
+### Q8: 桌面版首次运行提示"Windows 已保护你的电脑"？
+
+安装包未做代码签名，SmartScreen 会弹一次警告：点「更多信息」→「仍要运行」即可。这是未签名开源软件的正常现象。
 
 ---
 

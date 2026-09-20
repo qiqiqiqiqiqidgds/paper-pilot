@@ -7,6 +7,7 @@
     "dev": "next dev",
     "prebuild": "node scripts/copy-pdf-worker.mjs",
     "build": "next build",
+    "build:desktop": "node scripts/build-desktop.mjs",
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",

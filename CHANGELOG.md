@@ -2,6 +2,31 @@
 
 所有项目的显著变更都会记录在此文件。
 
+## [Unreleased] - 2026-09-20（桌面版：Electron 打包前后端为单个 Windows 安装包）
+
+新增 `desktop/` 工程，把 FastAPI 后端（PyInstaller onedir）与 Next.js 前端（静态导出）装进 Electron 壳，产出一键安装的 Windows 桌面应用（安装包约 122 MB）。架构：Electron 主进程动态选端口 spawn 后端 exe 并注入运行配置（`DATA_DIR`/`LOG_DIR` 落用户目录），FastAPI 通过新增的 `SERVE_STATIC_DIR` 同源托管前端静态页——无 CORS、无需 BFF，Web 开发模式完全不受影响。设计与风险分析见《可行性报告-Electron打包》，构建全流程见 [desktop/README.md](desktop/README.md)。
+
+### ✨ 新增
+- **desktop/ Electron 壳**：单实例锁、动态端口探测（仅监听 127.0.0.1）、后端健康检查轮询（60s 超时 + 后端先退出立即失败）、进程树清理（taskkill /T /F）、外链走系统浏览器、`--smoke` 冒烟模式（健康检查 + 首页 200 → exit 0，供 CI/脚本验证）
+- **backend 打包链**：`desktop_entry.py`（直接传 app 对象规避 frozen 动态导入坑）+ `paperpilot-backend.spec`（onedir、关闭 UPX 降误报、`collect_submodules('app')` 收集动态加载的 router）
+- **backend 静态托管**：`SERVE_STATIC_DIR` 环境变量存在时挂载 StaticFiles 到 `/`（API 路由优先匹配）
+- **backend 日志目录可配**：`LOG_DIR` 环境变量（桌面版指向 `%APPDATA%`，避免写安装目录）
+- **frontend 桌面构建**：`npm run build:desktop` —— `BUILD_TARGET=desktop` 开 `output: 'export'`，构建期临时移除 BFF 代理路由（try/finally 恢复），DefinePlugin 注入 `API_BASE=""` 同源直连
+
+### 🧪 验证
+- PyInstaller 产物单测冒烟：`/api/health` 200、静态托管 `/` 返回页面、`DATA_DIR`/`LOG_DIR` 正确落位
+- 开发形态与打包形态（`win-unpacked/PaperPilot.exe --smoke`）冒烟均 exit 0，退出后无孤儿进程
+- electron-builder 产出 `PaperPilot Setup 1.0.0.exe`（122 MB）；NSIS per-user 安装
+- 零回归：后端 pytest 257 passed、前端 vitest 79 passed + tsc 零错误、Web 模式 `next build` 正常（BFF 以 Dynamic 路由回归）
+
+### 📦 开源合规
+- 补 Noto Serif SC 字体的 SIL OFL 1.1 许可文本（`frontend/public/fonts/noto-serif-sc/LICENSE-OFL.txt`）
+- README / USER_GUIDE 补桌面版章节；新增 CODE_OF_CONDUCT.md 与 Issue / PR 模板
+
+### ⚠️ 已知事项
+- 安装包未做代码签名：SmartScreen 首次运行会提示「更多信息 → 仍要运行」；杀软对 PyInstaller 产物可能误报（已用 onedir + 关 UPX 缓解）
+- 本机构建关闭了 `signAndEditExecutable`（winCodeSign 工具包的符号链接在无开发者模式权限的 Windows 上解压必败，详见 desktop/README.md），exe 属性显示 Electron 默认产品名/图标；开启 Windows 开发者模式后可移除该限制
+
 ## [Unreleased] - 2026-09-09（全面检查修复闭环：2 P0 / 5 P1 / 9 P2 / 19 P3 全部修复验收）
 
 针对 2026-09-08 全面检查报告的问题清单，经五批「修改子代理修改 → 独立子代理验收」循环（每批全部 PASS 才进入下一批）全部修复并逐一验收通过；浏览器复测还新发现并修复了「引用跳转按钮从不传递引文文本」这一被原报告误诊归因的深层缺陷（引用高亮链路断裂的另一半根因）。完整报告见 [docs/audit/audit-2026-09-09.md](docs/audit/audit-2026-09-09.md)。

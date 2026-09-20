@@ -3,6 +3,7 @@ FastAPI 应用入口
 """
 import asyncio
 import importlib
+import os
 import sys
 from pathlib import Path
 
@@ -213,9 +214,22 @@ _include_router_safely("app.api.ppt", "ppt")                 # 依赖 python-ppt
 _include_router_safely("app.api.settings", "settings")       # 网页端供应商配置（仅依赖 pydantic）
 
 
-@app.get("/")
+# ====== 桌面版静态托管（可选） ======
+# SERVE_STATIC_DIR 指向 Next.js 静态导出产物（out/）时，根路径托管前端页面。
+# 页面与 /api/* 同源，前端无需 BFF 代理、无 CORS 问题（见 可行性报告-Electron打包）。
+# 必须放在所有 API 路由之后：Starlette 按注册顺序匹配，/api/* 优先，兜底才走静态。
+_SERVE_STATIC_DIR = os.environ.get("SERVE_STATIC_DIR", "")
+
+if _SERVE_STATIC_DIR and Path(_SERVE_STATIC_DIR).is_dir():
+    from fastapi.staticfiles import StaticFiles
+
+    app.mount("/", StaticFiles(directory=_SERVE_STATIC_DIR, html=True), name="frontend")
+    logger.info(f"  [OK]  静态前端          -> {_SERVE_STATIC_DIR}")
+
+
+@app.get("/", include_in_schema=_SERVE_STATIC_DIR == "")
 async def root():
-    """根路径"""
+    """根路径（桌面静态托管模式下由 StaticFiles 提供 index.html，本路由不生效）"""
     return {
         "name": "PaperPilot API",
         "version": "0.1.0",

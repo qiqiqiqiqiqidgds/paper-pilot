@@ -4,7 +4,9 @@ import type { PaperInfo, PaperDetail, AnalysisResult, CompareResponse, PPTGenera
 
 // API 走 Next.js BFF 代理（src/app/api/proxy/[...path]/route.ts），
 // 由服务端转发到后端并附加鉴权密钥，浏览器 bundle 不再包含任何密钥。
-const API_BASE = "/api/proxy";
+// 桌面版（静态导出 + FastAPI 同源托管）构建时传 NEXT_PUBLIC_API_BASE=""
+// 直连后端（后端路由本身就是 /api/*）。
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "/api/proxy";
 
 // 默认超时：30 秒（普通接口）；SSE/分析接口可单独传入更长超时
 const DEFAULT_TIMEOUT_MS = 30_000;

@@ -1,0 +1,60 @@
+{
+  "name": "paperpilot-desktop",
+  "version": "1.0.0",
+  "description": "PaperPilot 桌面版（Electron 壳：托管 PyInstaller 后端 + Next.js 静态前端）",
+  "author": "PaperPilot Authors",
+  "license": "MIT",
+  "main": "src/main.js",
+  "private": true,
+  "scripts": {
+    "assemble": "node scripts/assemble.mjs",
+    "start": "electron .",
+    "smoke": "electron . --smoke",
+    "dist": "electron-builder --win nsis",
+    "dist:dir": "electron-builder --win --dir"
+  },
+  "devDependencies": {
+    "electron": "^31.7.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.paperpilot.desktop",
+    "productName": "PaperPilot",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "resources/backend",
+        "to": "backend"
+      },
+      {
+        "from": "resources/frontend",
+        "to": "frontend"
+      }
+    ],
+    "win": {
+      "signAndEditExecutable": false,
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "shortcutName": "PaperPilot"
+    }
+  },
+  "allowScripts": {}
+}
