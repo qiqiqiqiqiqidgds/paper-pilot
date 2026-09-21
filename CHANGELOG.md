@@ -2,9 +2,41 @@
 
 所有项目的显著变更都会记录在此文件。
 
+## [Unreleased] - 2026-09-21（开源前审计修复：3 P0 + 8 P1 全部闭环）
+
+四路并行审计（后端安全 / 前端安全 / 桌面版 / 文档与配置一致性）发现的全部 P0/P1 项修复完毕，关键行为均有运行时或单元级验证。
+
+### 🔒 安全
+- **P0 starlette CVE-2024-47874**（multipart 无界内存缓冲 DoS，/api/upload 为触达面）：fastapi 0.111.0 → 0.141.1（连带 pydantic 2.13.5 / pydantic-settings 2.15.0 / starlette 1.6.0），全量测试回归通过
+- **P0 CI 从未运行**：本地分支 master 与 ci.yml 触发分支 [main, develop] 不匹配，已重命名为 main
+- **默认监听改回环**：APP_HOST 默认 0.0.0.0 → 127.0.0.1（原姿势下局域网任意设备可触达无鉴权服务；需局域网访问时在 .env 显式配置）
+- **Key 归属守卫（防 Key 外带）**：/api/settings 换 base_url 却不提供新 Key 时，不再沿用已存 Key 发往新地址（此前一条 POST /api/settings/test 即可把真实 Key 以 Bearer 发到任意地址）；新增 3 个单元测试
+- **桌面模式 Host 校验（防 DNS rebinding）**：SERVE_STATIC_DIR 生效时仅接受 127.0.0.1/localhost/[::1] 的 Host 头，其余 421（打包 exe 实测：伪造 Host → 421）
+- **外链 scheme 白名单**：对比结果的相关论文链接只放行 http(s)，javascript: 等伪协议退化为纯文本（`safeHttpUrl`）
+
+### 🐛 修复
+- **P0 Web 模式保存设置 405**：BFF 代理未导出 PUT，设置对话框保存/恢复默认全废；补导出后经真实 next start + FastAPI 链路实测 PUT 200
+
+### 🔧 桌面版加固
+- **父进程看护**：后端 exe 通过 PAPERPILOT_PARENT_PID 等待 Electron 主进程句柄，Electron 被强杀时后端自杀（实测：父进程存活期后端健康 200，父进程退出后后端消失，不再有孤儿进程锁数据目录）
+- **Electron 31（EOL）→ 44.4.3**、electron-builder 24 → 26.15.3；开发/打包两形态冒烟均通过，NSIS 重新产出（约 154 MB）
+- **next 14.2.5 → 14.2.35**（cache poisoning 等 advisory；本项目无 middleware，CVE-2025-29927 不适用）
+
+### 📦 开源工程化
+- 新增 `backend/requirements-dev.txt`（pytest/pytest-asyncio/pytest-cov/ruff），CI 与 CONTRIBUTING 同步改用（此前贡献者按文档装环境必然缺 pytest）
+- 死引用清理：backend/README 接口文档链接、desktop/README 与 CHANGELOG/main.js 的可行性报告引用（报告已入库 `docs/feasibility-electron-desktop.md`）
+- 文档口径修正：README 技术栈移除未使用的 react-markdown、USER_GUIDE Q5 改查 BACKEND_URL、架构图 WebSocket → SSE、api-spec CHANGELOG 相对链接、badge 空链接、desktop/README Node 版本统一 20+、frontend/backend README 过期章节刷新
+- `build:desktop` 显式执行 pdf worker 复制（原脚本绕过 prebuild 钩子，fresh clone 构建会产出 PDF 渲染 404 的包）
+
+### 🧪 验证
+- 后端 pytest **260 passed**（257 + 3 Key 守卫）、ruff 全绿
+- 前端 tsc 0 错误 / vitest 79 passed / eslint 0 / Web 与桌面双模式构建成功
+- 桌面：开发 + 打包形态冒烟 exit 0、Host 校验 421 实测、父进程看护实测、退出无孤儿进程
+- Web：next start + uvicorn 真实链路 PUT /api/settings 200、测试连接接口行为符合预期
+
 ## [Unreleased] - 2026-09-20（桌面版：Electron 打包前后端为单个 Windows 安装包）
 
-新增 `desktop/` 工程，把 FastAPI 后端（PyInstaller onedir）与 Next.js 前端（静态导出）装进 Electron 壳，产出一键安装的 Windows 桌面应用（安装包约 122 MB）。架构：Electron 主进程动态选端口 spawn 后端 exe 并注入运行配置（`DATA_DIR`/`LOG_DIR` 落用户目录），FastAPI 通过新增的 `SERVE_STATIC_DIR` 同源托管前端静态页——无 CORS、无需 BFF，Web 开发模式完全不受影响。设计与风险分析见《可行性报告-Electron打包》，构建全流程见 [desktop/README.md](desktop/README.md)。
+新增 `desktop/` 工程，把 FastAPI 后端（PyInstaller onedir）与 Next.js 前端（静态导出）装进 Electron 壳，产出一键安装的 Windows 桌面应用（安装包约 122 MB）。架构：Electron 主进程动态选端口 spawn 后端 exe 并注入运行配置（`DATA_DIR`/`LOG_DIR` 落用户目录），FastAPI 通过新增的 `SERVE_STATIC_DIR` 同源托管前端静态页——无 CORS、无需 BFF，Web 开发模式完全不受影响。设计与风险分析见 [docs/feasibility-electron-desktop.md](docs/feasibility-electron-desktop.md)，构建全流程见 [desktop/README.md](desktop/README.md)。
 
 ### ✨ 新增
 - **desktop/ Electron 壳**：单实例锁、动态端口探测（仅监听 127.0.0.1）、后端健康检查轮询（60s 超时 + 后端先退出立即失败）、进程树清理（taskkill /T /F）、外链走系统浏览器、`--smoke` 冒烟模式（健康检查 + 首页 200 → exit 0，供 CI/脚本验证）

@@ -236,3 +236,76 @@ async def test_llm_client_test_connection_swallows_errors(monkeypatch):
     result = await c.test_connection()
     assert result["ok"] is False
     assert "APIConnectionError" in result["message"]
+
+
+# ===== Key 归属守卫（2026-09 审计修复：防 /api/settings 把已存 Key 外带到任意 base_url）=====
+
+class TestKeyOwnershipGuard:
+    """换 base_url 却不带新 Key 时，不允许沿用旧 Key。
+
+    env 的 Key/base_url 视为一对；网页端覆盖 base_url 而不提供新 Key →
+    生效 Key 置空（请求会因缺 Key 失败，而不是把旧 Key 发往新地址）。
+    """
+
+    def _save_env(self):
+        return settings.llm_api_key, settings.llm_base_url
+
+    def _restore_env(self, saved):
+        settings.llm_api_key, settings.llm_base_url = saved
+
+    def test_effective_llm_env_key_not_reused_for_new_base_url(self):
+        saved = self._save_env()
+        settings.llm_api_key = "env-secret-key"
+        settings.llm_base_url = "https://api.deepseek.com"
+        try:
+            from app.services.runtime_settings import LLMOverrides
+
+            runtime_settings.update(
+                llm=LLMOverrides(base_url="https://evil.example/v1")
+            )
+            cfg = runtime_settings.effective_llm()
+            assert cfg.base_url == "https://evil.example/v1"
+            assert cfg.api_key == ""  # 旧 Key 不外带
+        finally:
+            self._restore_env(saved)
+
+    def test_effective_llm_key_and_base_url_together_allowed(self):
+        saved = self._save_env()
+        settings.llm_api_key = "env-secret-key"
+        settings.llm_base_url = "https://api.deepseek.com"
+        try:
+            from app.services.runtime_settings import LLMOverrides
+
+            runtime_settings.update(
+                llm=LLMOverrides(
+                    api_key="new-key", base_url="https://new.example/v1"
+                )
+            )
+            cfg = runtime_settings.effective_llm()
+            assert cfg.base_url == "https://new.example/v1"
+            assert cfg.api_key == "new-key"  # Key 与地址一起换：正常配对
+        finally:
+            self._restore_env(saved)
+
+    def test_llm_config_with_form_changes_base_url_without_key(self):
+        saved = self._save_env()
+        settings.llm_api_key = "env-secret-key"
+        settings.llm_base_url = "https://api.deepseek.com"
+        try:
+            from app.services.runtime_settings import LLMOverrides
+
+            runtime_settings.update(
+                llm=LLMOverrides(api_key="saved-key", base_url="https://saved.example/v1")
+            )
+            # 表单只换地址：不携带已存 Key 去测新地址
+            cfg = runtime_settings.llm_config_with(
+                LLMOverrides(base_url="https://evil.example/v1")
+            )
+            assert cfg.api_key == ""
+            assert cfg.base_url == "https://evil.example/v1"
+            # 空表单（沿用已保存配置）：Key 照常使用
+            cfg2 = runtime_settings.llm_config_with(LLMOverrides())
+            assert cfg2.api_key == "saved-key"
+            assert cfg2.base_url == "https://saved.example/v1"
+        finally:
+            self._restore_env(saved)

@@ -701,4 +701,4 @@ const pptRes = await fetch('/api/generate-ppt', {
 > 状态：✅ W1-W8 全部完成
 > 文档版本：v0.2（2026-07-29，已与代码同步）
 > 变更：拆分 `/api/compare` 和 `/api/compare-papers`，新增 `/api/analyze/stream` (SSE)、`/api/download-ppt/{filename}`、错误码 401/422/429
-> 完整代码审查修复记录：[`CHANGELOG.md`](../../CHANGELOG.md)
+> 完整代码审查修复记录：[`CHANGELOG.md`](../CHANGELOG.md)

@@ -103,6 +103,12 @@ export async function POST(req: NextRequest, ctx: { params: { path: string[] } }
   return proxy(req, ctx);
 }
 
+// PUT：/api/settings 的保存/重置走这里。漏导出会让 Next 返回 405，
+// Web 模式设置对话框整体不可用（桌面模式直连后端不受影响）——审计 P0 修复。
+export async function PUT(req: NextRequest, ctx: { params: { path: string[] } }) {
+  return proxy(req, ctx);
+}
+
 export async function DELETE(req: NextRequest, ctx: { params: { path: string[] } }) {
   return proxy(req, ctx);
 }

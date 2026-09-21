@@ -4,7 +4,11 @@
 # Windows 那边继续用原 requirements.txt 即可。
 
 # Web 框架
-fastapi==0.111.0
+# 与 requirements.txt 同步升级（starlette CVE-2024-47874 修复线），
+# 新版本在 Python 3.12+ 均有 wheel；3.14 需 >=0.128 系列
+fastapi>=0.128.0,<1.0
+# app/main.py 桌面版 Host 校验中间件直接 import starlette
+starlette>=0.47.1,<2.0
 uvicorn[standard]==0.30.1
 # 0.0.9 存在 CVE-2024-24762（ReDoS）/ CVE-2024-53981（boundary DoS）；>=0.0.32 已修复
 python-multipart>=0.0.32,<1.0
@@ -13,7 +17,7 @@ python-multipart>=0.0.32,<1.0
 # pydantic==2.7.1 在 Python 3.14 上没 wheel（pydantic-core 2.18.2 无 cp314），
 # 放宽到 >=2.12.0（首个支持 3.14 的版本），加 <3.0 上界防 2.x 破坏性变更
 pydantic>=2.12.0,<3.0
-pydantic-settings==2.2.1
+pydantic-settings>=2.2.1,<3.0
 
 # PDF 解析（macOS + Python 3.14：1.24.7 没 wheel，>=1.24.11 才有）
 # 加 <2.0 上界防止 2.x 破坏 API（1.x → 2.x PyMuPDF 有破坏性变更）

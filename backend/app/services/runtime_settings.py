@@ -171,9 +171,19 @@ class RuntimeSettingsStore:
     def effective_llm(self) -> LLMConnConfig:
         self._ensure_loaded()
         o = self._llm
+        api_key = (o.api_key or "").strip()
+        base_url = (o.base_url or "").strip()
+        # Key 归属校验（防 Key 外带）：env 的 Key 与 base_url 视为一对。
+        # 网页端只换了 base_url 却没提供新 Key 时，不把 env Key 发往新地址
+        # ——否则 PUT /api/settings 可被用来把真实 Key 持久化地重定向到
+        # 任意 base_url。覆盖 Key 与覆盖 base_url 一起提供则视为新配对，正常使用。
+        if not api_key and base_url and base_url != settings.llm_base_url:
+            api_key = ""
+        else:
+            api_key = api_key or settings.llm_api_key
         return LLMConnConfig(
-            api_key=(o.api_key or "").strip() or settings.llm_api_key,
-            base_url=(o.base_url or "").strip() or settings.llm_base_url,
+            api_key=api_key,
+            base_url=base_url or settings.llm_base_url,
             model=(o.model or "").strip() or settings.llm_model,
             max_tokens=o.max_tokens if o.max_tokens is not None else settings.llm_max_tokens,
             reasoning_split=(
@@ -200,10 +210,17 @@ class RuntimeSettingsStore:
         """当前生效配置 + 表单临时覆盖（供「测试连接」探测，不落盘不动单例）。
 
         表单里的空串/None 表示「沿用已保存的值」。
+        例外（Key 归属校验）：表单换了 base_url 却没填新 Key 时，不把已保存
+        的 Key 附上——否则 POST /api/settings/test 一条请求就能把真实 Key
+        以 Bearer 形式发到任意指定地址。
         """
         base = self.effective_llm()
-        api_key = (overrides.api_key or "").strip() or base.api_key
+        api_key = (overrides.api_key or "").strip()
         base_url = (overrides.base_url or "").strip() or base.base_url
+        if not api_key and base_url != base.base_url:
+            api_key = ""  # 换地址测试但不带新 Key：不外带旧 Key
+        else:
+            api_key = api_key or base.api_key
         model = (overrides.model or "").strip() or base.model
         return LLMConnConfig(
             api_key=api_key,

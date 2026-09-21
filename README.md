@@ -4,7 +4,7 @@
 > AI 智能体作品 · 8 周从 0 到 MVP
 
 [![Status](https://img.shields.io/badge/status-MVP-green)]()
-[![License](https://img.shields.io/badge/license-MIT-blue)]()
+[![License](https://img.shields.io/badge/license-MIT-blue)](./LICENSE)
 
 ---
 
@@ -169,7 +169,7 @@ paper-pilot/
 | 层 | 技术 |
 |----|------|
 | 前端 | Next.js 14 + TypeScript + Tailwind + shadcn/ui |
-| 前端渲染 | pdf.js + react-pdf + react-markdown |
+| 前端渲染 | pdf.js + react-pdf |
 | 前端状态 | Zustand |
 | 后端 | FastAPI + Python 3.11+ |
 | Agent 编排 | 手写 Map-Reduce（asyncio.gather + Semaphore）|

@@ -5,11 +5,11 @@
 ## 开发环境搭建
 
 ```bash
-# 后端：Python 3.11+
+# 后端：Python 3.11+（运行依赖 + 开发/测试依赖）
 cd backend
 python -m venv venv
 source venv/bin/activate        # Windows: .\venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+pip install -r requirements.txt -r requirements-dev.txt
 cp .env.example .env            # 按需填写 LLM_API_KEY（也可启动后在网页设置界面填写）
 uvicorn app.main:app --reload
 

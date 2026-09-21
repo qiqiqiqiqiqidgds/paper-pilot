@@ -1,8 +1,8 @@
 # PaperPilot 桌面版（Electron）
 
 把 PaperPilot 的 FastAPI 后端（PyInstaller 打包）与 Next.js 前端（静态导出）装进一个
-Electron 壳，产出一个可安装的 Windows 桌面应用。架构与设计依据见仓库根的
-《可行性报告-Electron打包-2026-09-20.md》。
+Electron 壳，产出一个可安装的 Windows 桌面应用。架构与设计依据见
+[docs/feasibility-electron-desktop.md](../docs/feasibility-electron-desktop.md)。
 
 ## 架构
 
@@ -34,7 +34,7 @@ desktop/
 
 ## 构建全流程
 
-前置：Windows x64 + Python 3.12（`py -3.12`）+ Node 18+。
+前置：Windows x64 + Python 3.12（`py -3.12`）+ Node 20+（与根 README 口径一致）。
 
 ```powershell
 # 1. 后端：PyInstaller onedir（首次先建 venv 装依赖）

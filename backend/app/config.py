@@ -83,7 +83,10 @@ class Settings(BaseSettings):
     )
 
     # ===== App =====
-    app_host: str = Field(default="0.0.0.0")
+    # 默认只监听回环（安全默认值）：0.0.0.0 会让局域网内任意设备访问本服务，
+    # 在未配置 APP_API_KEY 的开发姿势下等于把 LLM Key / 论文库暴露出去。
+    # 需要局域网访问时在 .env 显式设置 APP_HOST=0.0.0.0（并务必配好 APP_API_KEY）。
+    app_host: str = Field(default="127.0.0.1")
     app_port: int = Field(default=8000)
     # 生产必须为 False（关闭 uvicorn --reload + 详细错误堆栈外泄）
     # 本地开发请在 .env 中显式设置 APP_DEBUG=true

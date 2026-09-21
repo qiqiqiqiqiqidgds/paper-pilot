@@ -1,0 +1,12 @@
+# PaperPilot Backend - 开发 / 测试依赖
+# 运行时只需 requirements.txt；本文件供本地跑测试 / lint 与 CI 使用。
+# 版本与 CI（.github/workflows/ci.yml）保持一致。
+
+# 测试框架（pytest 9 + asyncio 插件）
+pytest==9.1.1
+pytest-asyncio==1.4.0
+# 覆盖率（CI 门禁 --cov-fail-under=70）
+pytest-cov==7.0.0
+
+# Lint（ruff：CI 与 CONTRIBUTING 均要求零告警）
+ruff==0.14.0

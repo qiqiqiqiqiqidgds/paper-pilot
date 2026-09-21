@@ -3,7 +3,7 @@
 /**
  * PaperPilot 桌面版主进程。
  *
- * 职责（见《可行性报告-Electron打包》§3 推荐架构）：
+ * 职责（见 docs/feasibility-electron-desktop.md §三 推荐架构）：
  *   1. 单实例锁；
  *   2. 探测空闲端口 → spawn PyInstaller 后端（onedir exe），注入全部运行配置；
  *   3. 轮询 /api/health 就绪后加载窗口（FastAPI 同源托管前端静态页）；
@@ -71,6 +71,8 @@ function spawnBackend(port) {
     // ===== Python 侧编码（中文 Windows 控制台默认 GBK）=====
     PYTHONIOENCODING: "utf-8",
     PYTHONUNBUFFERED: "1",
+    // 父进程看护：后端侧等待本进程句柄，Electron 被强杀时自动退出，防孤儿进程
+    PAPERPILOT_PARENT_PID: String(process.pid),
   };
 
   const proc = spawn(backendExe, [], {

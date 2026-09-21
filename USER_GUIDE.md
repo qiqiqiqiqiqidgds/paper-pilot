@@ -162,7 +162,7 @@ W6 阶段是基础版，幻灯片数量根据内容自动调整。如需定制�
 
 检查：
 - 后端是否在 8000 端口运行（`http://localhost:8000/docs` 能打开说明后端 OK）
-- 前端 `.env.local` 中 `NEXT_PUBLIC_API_BASE` 是否正确
+- 前端 `.env.local` 中 `BACKEND_URL` 是否指向后端地址（BFF 代理按它转发）
 - 浏览器控制台是否有 CORS 错误
 
 ### Q6: 怎么清空论文库？
@@ -203,7 +203,7 @@ W6 阶段是基础版，幻灯片数量根据内容自动调整。如需定制�
 │  - pdf.js 渲染 + 联动高亮                 │
 │  - React + Tailwind + Zustand             │
 └────────────┬─────────────────────────────┘
-             │ HTTP / WebSocket
+             │ HTTP（REST + SSE 流式分析）
 ┌────────────┴─────────────────────────────┐
 │  FastAPI 后端 (Python)                    │
 │  - Map-Reduce 拆解（asyncio.gather）     │

@@ -9,6 +9,7 @@ import { AnalysisView, Note, NoteHead, MiniPoints, circledNum } from "./analysis
 import { toast } from "sonner";
 import { usePaperStore } from "@/stores/paper-store";
 import { api } from "@/lib/api";
+import { safeHttpUrl } from "@/lib/utils";
 import type { CompareResponse, RelatedPaper } from "@/types";
 
 export function CompareView({ externalResult, onConsumed }: { externalResult?: CompareResponse | null; onConsumed?: () => void }) {
@@ -158,9 +159,10 @@ function CompareResultView({ data, onRetry }: { data: CompareResponse; onRetry: 
             title={p.title}
             page={p.year ? String(p.year) : ""}
             action={
-              p.url ? (
+              // 外链来自搜索/LLM 输出：只放行 http(s)，伪协议退化为纯文本
+              safeHttpUrl(p.url) ? (
                 <a
-                  href={p.url}
+                  href={safeHttpUrl(p.url) ?? undefined}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="note-jump !mt-0 ml-auto shrink-0"

@@ -16,6 +16,8 @@ LLM_* 等）由 Electron 壳通过环境变量注入，pydantic-settings 的
 """
 from __future__ import annotations
 
+import os
+
 import uvicorn
 
 # 静态导入：PyInstaller 依赖入口脚本的 import 图收集模块。
@@ -33,7 +35,38 @@ from app.api import (  # noqa: F401
 )
 
 
+def _watch_parent_windows() -> None:
+    """父进程看护（防孤儿后端）：Electron 主进程退出时本进程立即自杀。
+
+    背景：Electron 被任务管理器强杀 / 崩溃时，before-quit 里的 taskkill
+    不会执行，后端将永久存活并锁住 DATA_DIR，下次启动出现双实例并发写。
+    通过 PAPERPILOT_PARENT_PID（由 Electron 注入）在子线程等待父进程句柄，
+    父进程一消失即 os._exit —— 不走优雅关闭（避免 lifespan 清理在异常
+    状态下悬挂）。仅 Windows；拿不到句柄（权限/已退出）则退回无看护。
+    """
+    raw = os.environ.get("PAPERPILOT_PARENT_PID", "")
+    if not raw.isdigit() or os.name != "nt":
+        return
+    import ctypes
+    import threading
+
+    SYNCHRONIZE = 0x00100000
+    INFINITE = 0xFFFFFFFF
+    kernel32 = ctypes.windll.kernel32
+    handle = kernel32.OpenProcess(SYNCHRONIZE, False, int(raw))
+    if not handle:
+        return
+
+    def _wait_parent() -> None:
+        kernel32.WaitForSingleObject(handle, INFINITE)
+        kernel32.CloseHandle(handle)
+        os._exit(0)
+
+    threading.Thread(target=_wait_parent, name="parent-watchdog", daemon=True).start()
+
+
 def run() -> None:
+    _watch_parent_windows()
     uvicorn.run(
         app_main.app,
         host=app_main.settings.app_host,

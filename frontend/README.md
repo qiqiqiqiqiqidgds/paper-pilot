@@ -131,7 +131,7 @@ await api.upload(file, {
 # TypeScript 类型检查
 npx tsc --noEmit -p tsconfig.json
 
-# ESLint（待配置）
+# ESLint
 npm run lint
 ```
 
@@ -139,9 +139,13 @@ npm run lint
 
 最近的代码审查与修复见 [`CHANGELOG.md`](../CHANGELOG.md)。
 
+## 已落地
+
+- Vitest 单元测试（`npm test`）与 CI（tsc + eslint + vitest + build）
+- 桌面版静态导出构建（`npm run build:desktop`，见仓库根 README「桌面版」）
+
 ## 下一步（建议）
 
-- W9: 引入 Vitest 单元测试 + Playwright E2E
-- W10: 增加论文笔记 / 收藏夹 / 标签
-- W11: 论文库语义搜索
-- W12: 浏览器插件版（在新标签页打开论文）
+- 论文笔记 / 收藏夹 / 标签
+- 论文库语义搜索
+- 浏览器插件版（在新标签页打开论文）

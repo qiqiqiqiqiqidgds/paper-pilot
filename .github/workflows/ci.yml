@@ -23,13 +23,14 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
-          cache-dependency-path: backend/requirements.txt
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-dev.txt
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest pytest-asyncio httpx pytest-cov
+          pip install -r requirements.txt -r requirements-dev.txt
 
       - name: Syntax check (py_compile)
         run: |
@@ -37,7 +38,6 @@ jobs:
 
       - name: Lint (ruff)
         run: |
-          pip install ruff
           ruff check app/ tests/
 
       - name: Run unit tests with coverage

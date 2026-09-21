@@ -211,15 +211,15 @@ backend/
 
 ## 接口文档
 
-完整接口定义、请求/响应示例见 [`docs/W1-03-接口文档.md`](../docs/W1-03-接口文档.md)。
+完整接口定义、请求/响应示例见 [`docs/api-spec.md`](../docs/api-spec.md)。
 
 ## 变更日志
 
 最近的代码审查与修复见 [`CHANGELOG.md`](../CHANGELOG.md)。
 
-## 下一步（建议）
+## 桌面版打包
 
-- W9: 增加结构化日志（JSON formatter）+ 接入 Sentry
+把后端打成独立 exe（Electron 桌面版的一环）见 [`desktop/README.md`](../desktop/README.md)。
 - W10: Redis 替换内存限流（支持多 worker）
 - W11: 论文语义检索（向量化 + 全文检索）
 - W12: 对象存储（S3/OSS）替换本地文件系统

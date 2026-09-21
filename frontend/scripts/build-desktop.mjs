@@ -34,6 +34,10 @@ rmSync(outDir, { recursive: true, force: true });
 renameSync(apiDir, backupDir);
 
 try {
+  // 先复制 pdf worker：本脚本直接调用 next build，不会触发 npm 的 prebuild
+  // 钩子；而 worker 文件被 gitignore（由 copy-pdf-worker.mjs 生成），
+  // fresh clone 直接跑本脚本会产出 PDF 渲染 404 的静态包。
+  execSync("node scripts/copy-pdf-worker.mjs", { cwd: frontendDir, stdio: "inherit" });
   execSync("npx next build", {
     cwd: frontendDir,
     stdio: "inherit",

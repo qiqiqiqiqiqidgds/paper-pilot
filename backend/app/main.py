@@ -216,15 +216,50 @@ _include_router_safely("app.api.settings", "settings")       # 网页端供应�
 
 # ====== 桌面版静态托管（可选） ======
 # SERVE_STATIC_DIR 指向 Next.js 静态导出产物（out/）时，根路径托管前端页面。
-# 页面与 /api/* 同源，前端无需 BFF 代理、无 CORS 问题（见 可行性报告-Electron打包）。
+# 页面与 /api/* 同源，前端无需 BFF 代理、无 CORS 问题（见 docs/feasibility-electron-desktop.md）。
 # 必须放在所有 API 路由之后：Starlette 按注册顺序匹配，/api/* 优先，兜底才走静态。
 _SERVE_STATIC_DIR = os.environ.get("SERVE_STATIC_DIR", "")
 
 if _SERVE_STATIC_DIR and Path(_SERVE_STATIC_DIR).is_dir():
     from fastapi.staticfiles import StaticFiles
+    from starlette.types import ASGIApp, Receive, Scope, Send
+
+    class _LoopbackHostOnlyMiddleware:
+        """桌面模式 Host 校验（防 DNS rebinding）。
+
+        后端仅监听 127.0.0.1 且桌面版无 APP_API_KEY 鉴权；恶意网页可通过
+        DNS rebinding 把自己的域名解析到 127.0.0.1 后以"同源"身份读论文库。
+        校验 Host 头只认 127.0.0.1 / [::1] / localhost（含端口），
+        rebind 域名的 Host 头不满足，请求直接拒绝。
+        """
+
+        _ALLOWED_HOSTS = {"127.0.0.1", "localhost", "[::1]"}
+
+        def __init__(self, app: ASGIApp) -> None:
+            self._app = app
+
+        async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+            if scope["type"] == "http":
+                host = ""
+                # headers 是 list[(bytes, bytes)]，取 host 头（不含端口比较）
+                for k, v in scope.get("headers", []):
+                    if k == b"host":
+                        host = v.decode("latin-1", "ignore").split(":", 1)[0].strip()
+                        break
+                if host.lower() not in self._ALLOWED_HOSTS:
+                    from starlette.responses import JSONResponse
+
+                    resp = JSONResponse(
+                        {"detail": "Invalid Host header"}, status_code=421
+                    )
+                    await resp(scope, receive, send)
+                    return
+            await self._app(scope, receive, send)
+
+    app.add_middleware(_LoopbackHostOnlyMiddleware)
 
     app.mount("/", StaticFiles(directory=_SERVE_STATIC_DIR, html=True), name="frontend")
-    logger.info(f"  [OK]  静态前端          -> {_SERVE_STATIC_DIR}")
+    logger.info(f"  [OK]  静态前端          -> {_SERVE_STATIC_DIR}（仅接受回环 Host）")
 
 
 @app.get("/", include_in_schema=_SERVE_STATIC_DIR == "")
