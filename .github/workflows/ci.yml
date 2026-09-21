@@ -13,8 +13,7 @@ jobs:
     defaults:
       run:
         working-directory: backend
-    services:
-      # 这里没有外部依赖（无 DB / Redis），所以不需要 service 容器
+    # 这里没有外部依赖（无 DB / Redis），所以不需要 service 容器
     steps:
       - uses: actions/checkout@v4
 
